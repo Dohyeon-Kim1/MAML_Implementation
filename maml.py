@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from copy import deepcopy
 
 def conv_block_3x3(in_channel, out_channel):
   modules = [nn.Conv2d(in_channel, out_channel, 3, padding=1),
@@ -13,8 +14,8 @@ class MAML(nn.Module):
   def __init__(self,args):
     super().__init__()
     self.grad = []
-    self.num_class = args.num_class
-    self.num_update = args.num_update
+    self.num_classes = args.num_classes
+    self.num_updates = args.num_updates
     self.inner_lr = args.inner_lr
     self.outer_lr = args.outer_lr
     
@@ -22,7 +23,7 @@ class MAML(nn.Module):
     self.conv2 = conv_block_3x3(32,32)
     self.conv3 = conv_block_3x3(32,32)
     self.conv4 = conv_block_3x3(32,32)
-    self.fc = nn.Linear(800,self.num_class)
+    self.fc = nn.Linear(800,self.num_classes)
 
     self.loss_fn = nn.CrossEntropyLoss()
     self.optimizer = torch.optim.Adam(list(self.parameters()), lr=self.outer_lr)
