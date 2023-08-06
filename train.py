@@ -1,6 +1,6 @@
 import os
 import torch
-from dataloader import MiniImagenet
+from data_loader import MiniImagenet
 
 def train(model, args):
   Print_Iter = 100
