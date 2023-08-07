@@ -72,17 +72,18 @@ if __name__ == "__main__":
   torch.backends.cudnn.benchmark = False
 
   model = MAML(args)
-  model.to(args.device)
 
   if args.resume == 1 and args.train == 1:
     model_file = f"{args.log_dir}/{args.model_dir}/{args.seed}/model{args.test_epoch}"
-      print(model_file)
-      model.load_state_dict(torch.load(model_file))
+    print(model_file)
+    model.load_state_dict(torch.load(model_file))
 
   if args.train == 1:
+    model.train()
     train(model, args)
   else:
     model_file = f"{args.log_dir}/{args.model_dir}/{args.seed}/model{args.test_epoch}"
     model.load_state_dict(torch.load(model_file))
+    model.eval()
     acc, ci95 = test(model,args)
     print(f"Accuracy: {acc}, CI95 {ci95}")
