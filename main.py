@@ -14,13 +14,15 @@ parser.add_argument('--num_classes', default=5, type=int,
                     help='number of classes used in classification (e.g. 5-way classification).')
 parser.add_argument('--test_epoch', default=-1, type=int, 
                     help='test epoch, only work when test start')
-parser.add_argumenat('--device', default='cuda', type=str,
+parser.add_argument('--device', default='cuda', type=str,
                      help='used device when train or test')
+parser.add_argument('--seed', type=int,
+                    help='weight initialization, dataloader, random seed.')
 
 ## Training options
 parser.add_argument('--metatrain_iterations', default=20000, type=int,
                     help='number of metatraining iterations.')
-parser.add_argumnet('--num_updates', default=5, type=int,
+parser.add_argument('--num_updates', default=5, type=int,
                     help='number of updates for inner gradient updates')
 parser.add_argument('--inner_lr', default=0.01, type=float, 
                     help='the learning rate of learner (inner-loop)')
@@ -32,6 +34,8 @@ parser.add_argument('--update_batch_size', default=5, type=int,
                     help='number of examples used for inner gradient update (K for K-shot learning).')
 parser.add_argument('--update_batch_size_eval', default=15, type=int,
                     help='number of examples used for inner gradient test (K for K-shot learning).')
+parser.add_argument('--save', default=1, type=int,
+                    help='save checkpoint when training.')
 
 ## Model options
 parser.add_argument('--num_filters', default=32, type=int,
@@ -44,6 +48,8 @@ parser.add_argument('--logdir', default='xxx', type=str,
                     help='directory for summaries and checkpoints.')
 parser.add_argument('--datadir', default='xxx', type=str, 
                     help='directory for datasets.')
+parser.add_argument('--modeldir', type=str,
+                    help='directory for each model')
 parser.add_argument('--resume', default=0, type=int, 
                     help='resume training if there is a model available')
 parser.add_argument('--train', default=1, type=int, 
@@ -74,7 +80,7 @@ if __name__ == "__main__":
   model = MAML(args)
 
   if args.resume == 1 and args.train == 1:
-    model_file = f"{args.log_dir}/{args.model_dir}/{args.seed}/model{args.test_epoch}"
+    model_file = f"{args.logdir}/{args.modeldir}/{args.seed}/model{args.test_epoch}"
     print(model_file)
     model.load_state_dict(torch.load(model_file))
 
@@ -82,7 +88,7 @@ if __name__ == "__main__":
     model.train()
     train(model, args)
   else:
-    model_file = f"{args.log_dir}/{args.model_dir}/{args.seed}/model{args.test_epoch}"
+    model_file = f"{args.logdir}/{args.modeldir}/{args.seed}/model{args.test_epoch}"
     model.load_state_dict(torch.load(model_file))
     model.eval()
     acc, ci95 = test(model,args)

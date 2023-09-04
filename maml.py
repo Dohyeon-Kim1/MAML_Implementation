@@ -10,13 +10,6 @@ def conv_block_3x3(in_channel, out_channel):
             nn.MaxPool2d(2)]
   return nn.Sequential(*modules)
 
-def func_conv_block_3x3(self, x, weights, biases, bn_weights, bn_biases, is_training):
-  x = F.conv2d(x, weights, biases, padding=1)
-  x = F.batch_norm(x, running_mean=None, running_var=None, weight=bn_weights, bias=bn_biases, training=is_training)
-  x = F.relu(x)
-  x = F.max_pool2d(x, kernel_size=2, stride=2)
-  return x
-
 class MAML(nn.Module):
 
   def __init__(self, args):
@@ -30,11 +23,18 @@ class MAML(nn.Module):
     self.conv4 = conv_block_3x3(32,32)
     self.fc = nn.Linear(800,self.args.num_classes)
 
+  def functional_conv_block_forward(self, x, weights, biases, bn_weights, bn_biases, is_training):
+    x = F.conv2d(x, weights, biases, padding=1)
+    x = F.batch_norm(x, running_mean=None, running_var=None, weight=bn_weights, bias=bn_biases, training=is_training)
+    x = F.relu(x)
+    x = F.max_pool2d(x, kernel_size=2, stride=2)
+  return x
+
   def functional_forward(self, x, weights, is_training):
     for block in range(4):
-      x = self.functional_conv_block(x, weights[f'conv{block+1}.0.weight'], weights[f'conv{block+1}.0.bias'],
-                                     weights.get(f'conv{block+1}.1.weight'), weights.get(f'conv{block+1}.1.bias'), is_training)
-      x = x.view(x.size(0), -1)
+      x = self.functional_conv_block_forward(x, weights[f'conv{block+1}.0.weight'], weights[f'conv{block+1}.0.bias'],
+                                             weights.get(f'conv{block+1}.1.weight'), weights.get(f'conv{block+1}.1.bias'), is_training)
+    x = x.view(x.size(0), -1)
     x = F.linear(x, weights['fc.weight'], weights['fc.bias'])
     return x
  
